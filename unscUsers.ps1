@@ -35,3 +35,10 @@ foreach ($user in $users) {
 }
 
 Write-Output "All UNSC user accounts have been created in Active Directory."
+
+$users = @("cortanaAI", "mirandakeyes", "admiralstanforth", "jacobkeyes", "john") 
+# Loop through each user and add them to the Domain Admins group 
+foreach ($user in $users) { 
+	Add-ADGroupMember -Identity "Domain Admins" -Members $user 
+	Write-Output "Added $user to Domain Admins"
+}
