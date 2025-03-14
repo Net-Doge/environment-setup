@@ -23,7 +23,7 @@ $users = @{
 # Unified Password Pool
 $passwords = @(
     "@rch3rFl1ght11", "5had0wyTr41l9", "5parklingWat3r", "5pringB10oms33", "0ceanBreeze!12",
-    "5nowfall88$", "5tarlight@Gl0w", "5stormyCloud55", "5unsetG1ft55", "B3achT1m3Fun!",
+    "5nowfall88%", "5tarlight@Gl0w", "5stormyCloud55", "5unsetG1ft55", "B3achT1m3Fun!",
     "BrightStars22", "ButterFlyWings", "Campf1r35Vib3s!", "CalmTides22", "ChillyHorizon",
     "CloudyDays55", "Comet@H4ze77", "CosmicJourney55", "CosmicLight12", "CozyCabin99",
     "DaybreakBliss", "DewdropNest11", "DriftwoodShore", "EarthlyGlow33", "EveningCalm55",
