@@ -1,52 +1,73 @@
-# Parameters
-$users = @{
-    "IT.net" = @(
-        "jackson.davis1980", "zoey.hughes1985", "liam.wright1979", "sophia.evans1983", "oliver.collins1990",
-        "ava.long1984", "ethan.hayes1977", "amelia.ward1988", "benjamin.foster1991", "mia.peterson1992"
-    )
-}
+# Create the Organizational Unit for IT.net
+New-ADOrganizationalUnit -Name "Domain Users" -Path "DC=it,DC=net"
+
+# Regular Users for IT.net with Roles
+$itUsers = @(
+    @{FirstName="Mark"; LastName="Johnson"; Role="HelpDesk"},
+    @{FirstName="Emma"; LastName="Smith"; Role="HelpDesk"},
+    @{FirstName="David"; LastName="Brown"; Role="NetworkAdmin"},
+    @{FirstName="Olivia"; LastName="Williams"; Role="NetworkAdmin"},
+    @{FirstName="Chris"; LastName="Jones"; Role="SysAdmin"},
+    @{FirstName="Sophia"; LastName="Taylor"; Role="SysAdmin"},
+    @{FirstName="James"; LastName="Moore"; Role="DevOps"},
+    @{FirstName="Michael"; LastName="Clark"; Role="DevOps"},
+    @{FirstName="Noah"; LastName="King"; Role="SecurityAdmin"},
+    @{FirstName="Ava"; LastName="Walker"; Role="SecurityAdmin"},
+    @{FirstName="Elijah"; LastName="White"; Role="DatabaseAdmin"},
+    @{FirstName="Charlotte"; LastName="Hill"; Role="DatabaseAdmin"},
+    @{FirstName="Lucas"; LastName="Scott"; Role="BackupAdmin"},
+    @{FirstName="Mia"; LastName="Green"; Role="BackupAdmin"},
+    @{FirstName="Henry"; LastName="Lee"; Role="CloudAdmin"}
+)
+
+# Domain Administrators for IT.net
+$itDomainAdmins = @(
+    @{FirstName="Admin1"; LastName="IT"},
+    @{FirstName="Admin2"; LastName="IT"},
+    @{FirstName="Admin3"; LastName="IT"},
+    @{FirstName="Admin4"; LastName="IT"},
+    @{FirstName="Admin5"; LastName="IT"}
+)
 
 # Unified Password Pool
 $passwords = @(
-    "@rch3rFl1ght11", "5had0wyTr41l9", "5parklingWat3r", "5pringB10oms33", "0ceanBreeze!12",
-    "5nowfall88%", "5tarlight@Gl0w", "5stormyCloud55", "5unsetG1ft55", "B3achT1m3Fun!",
-    "BrightStars22", "ButterFlyWings", "Campf1r35Vib3s!", "CalmTides22", "ChillyHorizon",
-    "CloudyDays55", "Comet@H4ze77", "CosmicJourney55", "CosmicLight12", "CozyCabin99",
-    "DaybreakBliss", "DewdropNest11", "DriftwoodShore", "EarthlyGlow33", "EveningCalm55",
-    "ForestTrails33", "ForestWander11", "Fr0sty5M0rnings", "Free@domR1ngs11", "FrostyPeaks33",
-    "GlimmeringSun", "G0ldenSunr1s3!", "GoldenFields55", "GoldenHarvest", "GoldenRays44",
-    "HiddenValley99", "H1dden^Tr34sure", "MagicTrail99", "MeadowSunshine", "MeadowWander",
-    "MidnightForest", "MoonbeamGlow", "MoonlitLake99", "MoonriseGlow88", "MorningDew11",
-    "MountainHike99", "MountainShadow11", "MountainSpring88", "M@giCSpells33", "M0unt4in@Tr33k",
-    "OceanDepths77", "OceanWhisper44", "OpenField66", "P3aceful#N1ght", "PastelHues22",
-    "PeacefulWinds", "PrairieSky77", "Qu!etPath77", "QuietStream12", "RainbowGlow33",
-    "RainbowTrail88", "ReflectingPond", "RiverStream99", "R1v3r@Breeze77", "R0seGarden#55",
-    "SeasonalJoy99", "ShadyTrees99", "ShiningAurora", "ShiningMoon22", "SilverMoonlight99",
-    "Sk@t3park88", "Snowfall11", "SpringMeadow12", "StarryJourney88", "St@rrySk1es22",
-    "StarlitPath22", "SummerBreeze22", "SummerHaven99", "SunnySkies77", "Sunn!yD4ys88",
-    "SunsetDream22", "SunsetG1ft^^", "SunsetHike88", "SunsetMountain21", "SunsetView88",
-    "T3chn0&ong77", "T1d3s@High99", "TidalWave11", "ValleyPeace88", "WarmMeadow77",
-    "WildflowerPath", "Wintry&Land22", "WinterWonderland", "WoodlandWalk12"
+    "L0vely@Spr!ng33", "Qw1ckBreez3@77", "Str0ng@Winds99", "SunnY@Trail22", "CloudyN!ght#88",
+    "H!ddenV@lley11", "FrosteD@Hill33", "Cryst@lLake77", "StarryN!ght#44", "Comet@Sky123!"
 )
 
-# Function to select a password
-function Get-RandomPassword {
-    return $passwords | Get-Random
-}
-
-# Create Users with Passwords
-foreach ($domain in $users.Keys) {
-    $userList = $users[$domain]
-    foreach ($user in $userList) {
-        $password = Get-RandomPassword
-        $ouPath = "OU=Users,DC=$($domain -replace '\.', ',DC=')"
-
-        # Create user
-        New-ADUser -SamAccountName $user -UserPrincipalName "$user@$domain" `
-            -Name $user -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) `
-            -Enabled $true -Path $ouPath
-
-        # Display User Info
-        Write-Host "Created user: $user in domain: $domain with password: $password"
+# Create Role Groups
+$roles = @("HelpDesk", "NetworkAdmin", "SysAdmin", "DevOps", "SecurityAdmin", "DatabaseAdmin", "BackupAdmin", "CloudAdmin")
+foreach ($role in $roles) {
+    if (-not (Get-ADGroup -Filter "Name -eq '$role'" -ErrorAction SilentlyContinue)) {
+        New-ADGroup -Name $role -GroupScope Global -GroupCategory Security -Path "OU=Domain Users,DC=it,DC=net"
+        Write-Host "Created group: $role"
     }
 }
+
+# Helper function for creating users
+function Create-ADUsers {
+    param ([array]$users, [string]$path, [string]$domain)
+    foreach ($user in $users) {
+        $password = $passwords | Get-Random
+        $samAccountName = ($user.FirstName.Substring(0,1) + $user.LastName).ToLower()
+        New-ADUser -SamAccountName $samAccountName -Name "$($user.FirstName) $($user.LastName)" -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -Enabled $true -Path $path
+        Add-ADGroupMember -Identity $user.Role -Members $samAccountName
+        Write-Host "Created user: $($user.FirstName) $($user.LastName) in $domain with role: $($user.Role) and SamAccountName: $samAccountName"
+    }
+}
+
+# Helper function for creating domain administrators
+function Create-DomainAdmins {
+    param ([array]$admins, [string]$path, [string]$domain, [string]$group)
+    foreach ($admin in $admins) {
+        $password = $passwords | Get-Random
+        $samAccountName = ($admin.FirstName.Substring(0,1) + $admin.LastName).ToLower()
+        New-ADUser -SamAccountName $samAccountName -Name "$($admin.FirstName) $($admin.LastName)" -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -Enabled $true -Path $path
+        Add-ADGroupMember -Identity $group -Members $samAccountName
+        Write-Host "Created domain admin: $($admin.FirstName) $($admin.LastName) in $domain with SamAccountName: $samAccountName"
+    }
+}
+
+# Create regular users and domain administrators for IT.net
+Create-ADUsers -users $itUsers -path "OU=Domain Users,DC=it,DC=net" -domain "it.net"
+Create-DomainAdmins -admins $itDomainAdmins -path "OU=Domain Users,DC=it,DC=net" -domain "it.net" -group "Domain Admins"
